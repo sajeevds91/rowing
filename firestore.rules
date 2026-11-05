@@ -1,0 +1,61 @@
+rules_version = '2';
+// Security rules for the STC Rowing Crew Hub (Firebase → Firestore → Rules → paste → Publish).
+// Roles live in users/{uid}.role : coach | entry | athlete | advisory
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function me() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
+    function hasProfile() { return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)); }
+    function role() { return me().role; }
+    function isCoach() { return hasProfile() && role() == 'coach'; }
+    function isEntry() { return hasProfile() && role() == 'entry'; }
+    function isAthlete() { return hasProfile() && role() == 'athlete'; }
+    function ownAthlete(data) { return isAthlete() && data.athleteId == me().athleteId; }
+
+    // Accounts: coach manages all; everyone can read their own.
+    // The very first account may make itself coach (first-time setup) while team/owner doesn't exist.
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isCoach());
+      allow write: if isCoach();
+      allow create: if signedIn() && request.auth.uid == uid
+        && !exists(/databases/$(database)/documents/team/owner)
+        && request.resource.data.role == 'coach';
+    }
+    match /team/owner {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
+    }
+    match /team/main {
+      allow read: if hasProfile();
+      allow write: if isCoach();
+    }
+
+    // Daily entry: attendance and session completion — coach + data-entry
+    match /attendance/{d} { allow read: if hasProfile(); allow write: if isCoach() || isEntry(); }
+    match /completion/{d} { allow read: if hasProfile(); allow write: if isCoach() || isEntry(); }
+
+    // Tests / resting HR: coach any; data-entry resting HR for anyone; athlete own resting HR only
+    match /metrics/{id} {
+      allow read: if hasProfile();
+      allow create, update: if isCoach()
+        || (isEntry() && request.resource.data.type == 'rhr')
+        || (ownAthlete(request.resource.data) && request.resource.data.type == 'rhr');
+      allow delete: if isCoach()
+        || (isEntry() && resource.data.type == 'rhr')
+        || (ownAthlete(resource.data) && resource.data.type == 'rhr');
+    }
+
+    // Athlete training log: athlete writes own, coach any
+    match /logs/{id} {
+      allow read: if hasProfile();
+      allow create, update: if isCoach() || ownAthlete(request.resource.data);
+      allow delete: if isCoach() || ownAthlete(resource.data);
+    }
+
+    // Everything else: everyone with a login reads, coach writes
+    match /{col}/{id} {
+      allow read: if hasProfile() && col != 'users';
+      allow write: if isCoach() && col in ['athletes', 'results', 'races', 'combos', 'calendar', 'updates', 'comments', 'history', 'photos', 'weeks'];
+    }
+  }
+}

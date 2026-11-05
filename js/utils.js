@@ -106,7 +106,27 @@ const U = (() => {
     }).join(',')).join('\n');
   }
 
+  // ---------- Distances ----------
+  const DISTANCES = [
+    { key: '300', label: '300 m', m: 300 },
+    { key: '500', label: '500 m', m: 500 },
+    { key: '1000yd', label: '1000 yd (Royal Thomian)', m: 914.4 },
+    { key: '1000', label: '1000 m', m: 1000 },
+    { key: '2000', label: '2000 m', m: 2000 },
+    { key: 'head', label: 'Head race — 2 miles', m: 3218.7 },
+  ];
+  function fmtDist(m) {
+    m = Number(m);
+    const d = DISTANCES.find((x) => Math.abs(x.m - m) < 0.5);
+    if (d) return d.key === '1000yd' ? '1000 yd' : d.key === 'head' ? '2 mi head' : d.label;
+    return m >= 1000 ? round(m / 1000, 2) + ' km' : Math.round(m) + ' m';
+  }
+  const minutes = (t) => { if (!t) return null; const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+  const hhmm = (mins) => `${String(Math.floor(mins / 60)).padStart(2, '0')}:${String(mins % 60).padStart(2, '0')}`;
+  const fmt12 = (t) => { if (!t) return ''; const [h, m] = t.split(':').map(Number); return `${((h + 11) % 12) + 1}:${String(m).padStart(2, '0')}${h >= 12 ? 'pm' : 'am'}`; };
+
   return {
+    DISTANCES, fmtDist, minutes, hhmm, fmt12,
     uid, parseTime, fmtTime, split500, watts, projectTime,
     iso, today, parseISO, addDays, mondayOf, daysBetween, DAYS, MONTHS, fmtDate, fmtShort,
     mean, min, max, round, esc, $, $$, initials, toast, formData, readImage, download, toCSV,
