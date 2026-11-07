@@ -1,0 +1,26 @@
+# systemd service for the Transco customer dashboard.
+# Install: sudo cp deploy/transco.service /etc/systemd/system/ && sudo systemctl enable --now transco
+[Unit]
+Description=Transco Consolidation customer dashboard
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=transco
+Group=transco
+WorkingDirectory=/opt/transco/transco-dashboard
+Environment=NODE_ENV=production
+Environment=HOST=127.0.0.1
+ExecStart=/usr/bin/node --disable-warning=ExperimentalWarning server.js
+Restart=always
+RestartSec=5
+
+# Hardening: the app may only write to its data folder.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/transco/transco-dashboard/data
+
+[Install]
+WantedBy=multi-user.target

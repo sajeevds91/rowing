@@ -58,7 +58,7 @@ app.use((err, req, res, next) => {
 });
 
 if (require.main === module) {
-  app.listen(config.port, () => {
+  app.listen(config.port, config.host, () => {
     console.log(`${config.companyName} dashboard running at ${config.appUrl}`);
     console.log(`  track & trace: ${tracking.providerName}${tracking.providerName === 'demo' ? ' (demo data)' : ''}`);
     console.log(`  MarineTraffic: ${tracking.marineTrafficEnabled ? 'live API' : 'not configured (positions come from track & trace / demo)'}`);

@@ -60,7 +60,9 @@ The feed should return JSON like this (anything missing is simply not shown):
 
 ## Hosting
 
-Any host that runs Node.js with a persistent disk works (a small VM, Render, Railway, Fly.io, Azure App Service…). Data is in `data/transco.db` (SQLite), so back up that folder. In production set `NODE_ENV=production`, `SESSION_SECRET` and `APP_URL`, and serve it over HTTPS.
+Step-by-step instructions for a new Ubuntu server (HTTPS, auto-restart, backups, updates) are in [`deploy/DEPLOY.md`](deploy/DEPLOY.md).
+
+Any host that runs Node.js 22.13+ with a persistent disk works. Data is in `data/transco.db` (SQLite), so back up that folder. In production set `NODE_ENV=production`, `SESSION_SECRET` and `APP_URL`, and serve it over HTTPS.
 
 ## Code layout
 

@@ -26,6 +26,7 @@ module.exports = {
   ROOT,
   DATA_DIR,
   port: int(env.PORT, 3000),
+  host: env.HOST || undefined, // set HOST=127.0.0.1 behind a reverse proxy
   appUrl: (env.APP_URL || `http://localhost:${int(env.PORT, 3000)}`).replace(/\/$/, ''),
   production: env.NODE_ENV === 'production',
   sessionSecret: sessionSecret(),
