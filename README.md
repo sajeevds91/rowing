@@ -61,3 +61,7 @@ python3 -m http.server 8000
 ```
 
 Then open http://localhost:8000.
+
+---
+
+This repository also contains **`transco-dashboard/`**, a separate customer shipment-tracking portal for Transco Consolidation. See [`transco-dashboard/README.md`](transco-dashboard/README.md).
